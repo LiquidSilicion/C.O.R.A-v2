@@ -202,10 +202,7 @@ C.O.R.A-v2/
 │   └── parse_reports.py
 │
 ├── hardware/                     # Hardware-specific files
-│   ├── zedboard/
-│   │   ├── constraints.xdc
-│   │   └── pin_mapping.md
-│   └── zcu104/
+│   └── zedboard/
 │       ├── constraints.xdc
 │       └── pin_mapping.md
 │
