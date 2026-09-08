@@ -72,23 +72,147 @@ than patching:
 
 ```
 C.O.R.A-v2/
-├── rtl/
-│   ├── frontend/          # audio_rom, fft_filterbank, biquad, pm_filter
-│   ├── ihc/               # ihc_channel, ihc_top, adaptation_filter, lowpass
-│   ├── lif/               # lif_neuron, lif_top
-│   ├── aer/               # aer_encoder, aer_encoder_model, timestamp_manager
-│   ├── snn/               # mac_engine, weight_router, weight_bank, 
-│   │                      # window_acc_bram, s10_window_accumulator, 
-│   │                      # lif_array, input_from_aer, overlap_voter
-│   ├── common/            # clock_divider, fifo, cdc_sync
-│   └── top/               # top_layer, snn_top_with_rom
-├── constraints/
-│   └── zedboard.xdc       # ZedBoard pin mappings (Y9 clock, P16 reset)
-├── mem/                   # Pre-generated .mem files (weights, audio ROM, LUTs)
-├── tb/                    # Verilog/Cocotb testbenches
-├── python/                # Python reference model (cochlear + SNN training)
-├── docs/                  # Block diagrams, timing diagrams, reports
-└── README.md
+│
+├── README.md
+├── LICENSE
+├── .gitignore
+│
+├── src/                          # All source code
+│   ├── rtl/                      # Verilog/SystemVerilog RTL
+│   │   ├── top/                  # Top-level modules
+│   │   │   ├── top_layer.sv
+│   │   │   └── snn_top_with_rom.sv
+│   │   ├── frontend/             # Audio DSP pipeline
+│   │   │   ├── audio_rom.sv
+│   │   │   ├── pm_filter.sv
+│   │   │   ├── fft_filterbank.sv
+│   │   │   └── biquad_df2t.sv
+│   │   ├── ihc/                  # Inner hair cell models
+│   │   │   ├── ihc_top.sv
+│   │   │   ├── ihc_channel.sv
+│   │   │   ├── nonlinear_compression.sv
+│   │   │   ├── adaptation_filter.sv
+│   │   │   ├── half_wave_rectifier.sv
+│   │   │   ── lowpass_filter.sv
+│   │   ├── lif/                  # LIF neurons
+│   │   │   ├── lif_top.sv
+│   │   │   └── lif_neuron.sv
+│   │   ├── aer/                  # Address-Event Representation
+│   │   │   ├── aer_encoder.sv
+│   │   │   ├── aer_encoder_model.sv
+│   │   │   ├── input_from_aer.sv
+│   │   │   └── timestamp_manager.sv
+│   │   ├── snn/                  # SNN accelerator
+│   │   │   ├── mac_engine.sv
+│   │   │   ├── weight_router.sv
+│   │   │   ├── weight_bank.sv
+│   │   │   ├── lif_array.sv
+│   │   │   ├── s10_window_accumulator.sv
+│   │   │   ├── window_acc_bram.sv
+│   │   │   └── overlap_voter.sv
+│   │   ├── common/               # Reusable components
+│   │   │   ├── fifo.sv
+│   │   │   ├── clock_divider.sv
+│   │   │   ├── cdc_sync.sv
+│   │   │   ── uart_tx.sv
+│   │   ── include/              # Header files, packages
+│   │       └── erb_coefficients.vh
+│   │
+│   ├── python/                   # Python scripts
+│   │   ├── train_snn.py          # SNN training (PyTorch/snnTorch)
+│   │   ├── gen_audio_rom.py      # Convert WAV to .mem
+│   │   ├── gen_coefficients.py   # Generate ERB filter coeffs
+│   │   ├── gen_weights.py        # Export trained weights
+│   │   ├── verify_model.py       # Python reference model
+│   │   └── utils/
+│   │       ├── dataset.py
+│   │       ── quantize.py
+│   │
+│   ├── constraints/              # XDC constraint files
+│   │   ├── zedboard.xdc
+│   │   ├── zcu104.xdc
+│   │   └── timing_constraints.xdc
+│   │
+│   ├── tcl/                      # TCL scripts for Vivado
+│   │   ├── create_project.tcl
+│   │   ├── run_synthesis.tcl
+│   │   ├── run_implementation.tcl
+│   │   └── generate_bitstream.tcl
+│   │
+│   └── testbenches/              # Simulation testbenches
+│       ├── tb_top_layer.sv
+│       ├── tb_filterbank.sv
+│       ├── tb_mac_engine.sv
+│       └── cocotb/               # Python-based testbenches
+│           └── test_aer_encoder.py
+│
+├── mem/                          # Memory initialization files
+│   ├── audio/
+│   │   ├── on.mem
+│   │   ├── off.mem
+│   │   └── yes.mem
+│   ├── weights/
+│   │   ├── win.mem
+│   │   ├── wrec.mem
+│   │   └── wout.mem
+│   ├── lookup/
+│   │   └── ni_lut.mem
+│   └── aer/
+│       └── aer_input.mem
+│
+├── docs/                         # Documentation
+│   ├── README.md                 # Detailed documentation
+│   ├── architecture/
+│   │   ├── system_overview.md
+│   │   ├── dsp_pipeline.md
+│   │   ├── snn_accelerator.md
+│   │   └── block_diagrams/
+│   │       ├── frontend.pdf
+│   │       └── backend.pdf
+│   ├── papers/
+│   │   ├── draft_v1.tex
+│   │   ├── figures/
+│   │   ── references.bib
+│   ├── reports/
+│   │   ├── midterm_report.pdf
+│   │   └── final_report.pdf
+│   ── changelog.md
+│
+── logs/                         # Build and simulation logs
+│   ├── synthesis/
+│   ├── implementation/
+│   ├── simulation/
+│   └── power_estimation/
+│
+├── results/                      # Experimental results
+│   ├── vivado_reports/
+│   │   ├── utilization.rpt
+│   │   ├── timing.rpt
+│   │   └── power.rpt
+│   ├── measurements/
+│   │   ├── accuracy_results.csv
+│   │   └── latency_measurements.csv
+│   └── waveforms/
+│       ── *.vcd
+│
+├── scripts/                      # Utility scripts
+│   ├── setup_env.sh
+│   ├── clean_build.sh
+│   ├── run_simulation.sh
+│   └── parse_reports.py
+│
+├── hardware/                     # Hardware-specific files
+│   ├── zedboard/
+│   │   ├── constraints.xdc
+│   │   └── pin_mapping.md
+│   └── zcu104/
+│       ├── constraints.xdc
+│       └── pin_mapping.md
+│
+└── notebooks/                    # Jupyter notebooks for exploration
+    ├── 01_data_exploration.ipynb
+    ├── 02_model_training.ipynb
+    └── 03_results_analysis.ipynb
 ```
 
 ---
