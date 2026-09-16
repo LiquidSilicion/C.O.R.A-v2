@@ -32,10 +32,10 @@ always @(posedge clk) begin
         x_n_1     <= 16'sd0;
         y_n       <= 16'sd0;
         valid_out <= 1'b0;
-    end else if (valid_in) begin        // ← ADD THIS LINE (was just "else")
+    end else if (valid_in) begin
         x_n_1     <= x_n;
         y_n       <= y_next;
         valid_out <= valid_in;
-    end                                 // ← remove the bare "else" entirely
+    end                             
 end
 endmodule
